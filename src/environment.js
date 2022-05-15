@@ -33,9 +33,9 @@ export default class Environment extends GameObject {
         caller.accelerate(caller.velocity.x, 0);
         accY = false;
       }
-      // if (this.checkIntersectX(caller, child)) {
-      //   caller.accelerate(0, caller.velocity.y);
-      // }
+      if (this.checkIntersectX(caller, child)) {
+        caller.accelerate(0, caller.velocity.y);
+      }
     });
 
     caller.position.y += caller.velocity.y;

@@ -8,7 +8,7 @@ export default class GameObject {
     this.movementEnabled = false;
     this.velocity = new THREE.Vector2(0, 0);
     this.image = image;
-    if (this.image) {
+    if (this.image && !(this.image instanceof Array)) {
       this.image.width = window.innerWidth;
       this.image.height = window.innerHeight;
     }
@@ -16,11 +16,13 @@ export default class GameObject {
   }
 
   draw(ctx) {
-    const xnum = Math.ceil(this.width / this.image.width);
-    const ynum = Math.ceil(this.height / this.image.height);
-    for (let x = 0; x < xnum; x++) {
-      for (let y = 0; y < ynum; y++) {
-        ctx.drawImage(this.image, this.position.x + (this.image.width * x), this.position.y + (this.image.height * y), this.image.width, this.image.height);
+    if (this.image && !(this.image instanceof Array)) {
+      const xnum = Math.ceil(this.width / this.image.width);
+      const ynum = Math.ceil(this.height / this.image.height);
+      for (let x = 0; x < xnum; x++) {
+        for (let y = 0; y < ynum; y++) {
+          ctx.drawImage(this.image, this.position.x + (this.image.width * x), this.position.y + (this.image.height * y), this.image.width, this.image.height);
+        }
       }
     }
   }
