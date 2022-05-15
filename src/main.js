@@ -4,7 +4,7 @@ import Environment from './environment';
 import Player from './player';
 import NpObject from './np_object';
 import brick from './assets/images/brick.png';
-import sky from './assets/images/spooky_bg.gif';
+import sky from './assets/images/spooky.gif';
 
 function createImage(src) {
   const image = new Image();
