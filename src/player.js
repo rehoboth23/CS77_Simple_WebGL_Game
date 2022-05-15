@@ -5,6 +5,7 @@ export default class Player extends GameObject {
   constructor(env, image) {
     super(50, 150, new THREE.Vector2(100, 100), image);
     this.force = new THREE.Vector2(5, 20);
+    env.player = this;
     this.parent = env;
     this.color = 'red';
     this.x_offset = this.position.x;
@@ -65,7 +66,7 @@ export default class Player extends GameObject {
 
     this.draw(ctx);
     if (this.movementEnabled) {
-      this.parent.checkObstacle(this);
+      this.parent.checkObstacle();
     }
   }
 
