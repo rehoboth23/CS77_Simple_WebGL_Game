@@ -4,7 +4,7 @@ import GameObject from './game_object';
 export default class Player extends GameObject {
   constructor(env, image) {
     super(50, 100, new THREE.Vector2(100, 100), image);
-    this.force = new THREE.Vector2(5, 20);
+    this.force = new THREE.Vector2(5, 10);
     env.player = this;
     this.parent = env;
     this.color = 'red';
@@ -14,8 +14,8 @@ export default class Player extends GameObject {
     this.frameStart = 0;
     this.frameLimit = 2;
     this.flip = false;
-
-    if (this.image instanceof Array) setInterval(() => this.animateImageFrame(this), 200);
+    this.consecutiveClicks = 0;
+    this.atRest = true;
   }
 
   draw(ctx) {
@@ -42,6 +42,12 @@ export default class Player extends GameObject {
       this.imageFrameHandler(this);
     }
 
+    if (this.atRest) {
+      this.consecutiveClicks = 0;
+    }
+
+    if (this.velocity.y < 0) this.atRest = 0;
+
     if (this.movementEnabled) {
       this.parent.checkObstacle();
     }
@@ -57,7 +63,11 @@ export default class Player extends GameObject {
       const { key } = event;
       switch (key) {
         case 'ArrowUp':
-          this.accelerate(this.velocity.x, -this.force.y);
+          if (this.consecutiveClicks < 2) {
+            this.accelerate(this.velocity.x, -this.force.y);
+            this.consecutiveClicks++;
+            this.atRest = false;
+          }
           break;
         case 'ArrowDown':
           this.accelerate(this.velocity.x, this.force.y);

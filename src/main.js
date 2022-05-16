@@ -87,7 +87,7 @@ export default function initGame() {
     ]);
     player.enableMovement();
 
-    obj1 = new NpObject(env, 250, 550, 250, 50, createImage(brick));
+    obj1 = new NpObject(env, 250, 750, 250, 50, createImage(brick));
     obj1.key = 'foreground';
     obj1.enableMovement();
 

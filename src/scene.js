@@ -37,8 +37,11 @@ export default class Scene extends GameObject {
       if (child.visible) {
         if (this.checkIntersectY(child)) {
           if (child.key === 'collapse') child.visible = false;
-          this.player.accelerate(this.player.velocity.x, 0);
-          accY = false;
+          else {
+            this.player.accelerate(this.player.velocity.x, 0);
+            accY = false;
+            this.player.atRest = true;
+          }
         }
         if (this.checkIntersectX(child)) {
           if (child.key === 'collapse') child.visible = false;

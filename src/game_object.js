@@ -12,6 +12,7 @@ export default class GameObject {
     this.visible = true;
     this.frameStart = 0;
     this.frameLimit = 0;
+    this.frameSpeed = 100;
     this.imageFrameHandler = null;
     if (this.image && !(this.image instanceof Array)) {
       this.image.width = window.innerWidth;
@@ -20,7 +21,7 @@ export default class GameObject {
       this.imageFrameHandler = this.image[this.image.length - 1];
     }
     this.key = 'generic';
-    if (this.image instanceof Array) setInterval(() => this.animateImageFrame(this), 100);
+    if (this.image instanceof Array) setInterval(() => this.animateImageFrame(this), this.frameSpeed);
   }
 
   setVisible(arg = true) {
