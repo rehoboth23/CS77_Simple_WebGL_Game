@@ -13,7 +13,10 @@ export default class Scene extends GameObject {
   }
 
   draw(ctx) {
-    this.children.forEach((child) => child.draw(ctx));
+    ctx.clearRect(0, 0, this.width, this.height);
+    this.children.forEach((child) => {
+      if (child.visible) child.draw(ctx);
+    });
   }
 
   update(ctx) {
@@ -31,12 +34,16 @@ export default class Scene extends GameObject {
   checkObstacle() {
     let accY = true;
     this.children.forEach((child) => {
-      if (this.checkIntersectY(child)) {
-        this.player.accelerate(this.player.velocity.x, 0);
-        accY = false;
-      }
-      if (this.checkIntersectX(child)) {
-        this.player.accelerate(0, this.player.velocity.y);
+      if (child.visible) {
+        if (this.checkIntersectY(child)) {
+          if (child.key === 'collapse') child.visible = false;
+          this.player.accelerate(this.player.velocity.x, 0);
+          accY = false;
+        }
+        if (this.checkIntersectX(child)) {
+          if (child.key === 'collapse') child.visible = false;
+          this.player.accelerate(0, this.player.velocity.y);
+        }
       }
     });
 
@@ -72,7 +79,7 @@ export default class Scene extends GameObject {
   }
 
   checkIntersectY(target) {
-    if (target.key === 'background') return false;
+    if (target.key !== 'foreground' || !target.visible) return false;
     if (
       (
         (

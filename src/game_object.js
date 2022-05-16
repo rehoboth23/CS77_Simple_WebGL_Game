@@ -8,11 +8,28 @@ export default class GameObject {
     this.movementEnabled = false;
     this.velocity = new THREE.Vector2(0, 0);
     this.image = image;
+    this.frame = 0;
+    this.visible = true;
+    this.frameStart = 0;
+    this.frameLimit = 0;
+    this.imageFrameHandler = null;
     if (this.image && !(this.image instanceof Array)) {
       this.image.width = window.innerWidth;
       this.image.height = window.innerHeight;
+    } else if (this.image instanceof Array) {
+      this.imageFrameHandler = this.image[this.image.length - 1];
     }
     this.key = 'generic';
+    if (this.image instanceof Array) setInterval(() => this.animateImageFrame(this), 100);
+  }
+
+  setVisible(arg = true) {
+    this.visible = arg;
+  }
+
+  animateImageFrame(player) {
+    this.frame++;
+    if (this.frame >= this.frameLimit) this.frame = this.frameStart;
   }
 
   draw(ctx) {
@@ -24,11 +41,16 @@ export default class GameObject {
           ctx.drawImage(this.image, this.position.x + (this.image.width * x), this.position.y + (this.image.height * y), this.image.width, this.image.height);
         }
       }
+    } else if (this.image instanceof Array) {
+      ctx.drawImage(this.image[this.frame], this.position.x, this.position.y, this.width, this.height);
     }
   }
 
   update(ctx) {
-    this.draw(ctx);
+    if (this.image instanceof Array) {
+      if (this.imageFrameHandler) this.imageFrameHandler(this);
+    }
+
     if (this.movementEnabled) {
       this.position.y += this.velocity.y;
       this.position.x += this.velocity.x;

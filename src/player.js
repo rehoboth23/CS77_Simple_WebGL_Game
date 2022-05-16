@@ -3,7 +3,7 @@ import GameObject from './game_object';
 
 export default class Player extends GameObject {
   constructor(env, image) {
-    super(50, 150, new THREE.Vector2(100, 100), image);
+    super(50, 100, new THREE.Vector2(100, 100), image);
     this.force = new THREE.Vector2(5, 20);
     env.player = this;
     this.parent = env;
@@ -15,7 +15,7 @@ export default class Player extends GameObject {
     this.frameLimit = 2;
     this.flip = false;
 
-    setInterval(() => this.animateImageFrame(this), 200);
+    if (this.image instanceof Array) setInterval(() => this.animateImageFrame(this), 200);
   }
 
   draw(ctx) {
@@ -38,33 +38,10 @@ export default class Player extends GameObject {
   }
 
   update(ctx) {
-    if (this.velocity.y === 0 && this.velocity.x === 0) {
-      if (this.frame > 2) {
-        this.frame = 0;
-        this.frameStart = 0;
-        this.frameLimit = 2;
-      }
-    } else if (this.velocity.y < 0) {
-      if (this.frame !== 8) {
-        this.frame = 8;
-        this.frameStart = 8;
-        this.frameLimit = 8;
-      }
-    } else if (this.velocity.y > this.parent.gravity) {
-      if (this.frame !== 9) {
-        this.frame = 9;
-        this.frameStart = 9;
-        this.frameLimit = 9;
-      }
-    } else if (this.velocity.x !== 0) {
-      if (this.frame < 2 || this.frame > 7) {
-        this.frame = 2;
-        this.frameStart = 2;
-        this.frameLimit = 7;
-      }
+    if (this.image instanceof Array) {
+      this.imageFrameHandler(this);
     }
 
-    this.draw(ctx);
     if (this.movementEnabled) {
       this.parent.checkObstacle();
     }
