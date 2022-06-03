@@ -1,10 +1,11 @@
+/*eslint-disable*/
 import * as THREE from 'three';
 import GameObject from './game_object';
 
 export default class Player extends GameObject {
   constructor(env, image) {
     super(50, 100, new THREE.Vector2(100, 100), image);
-    this.force = new THREE.Vector2(5, 10);
+    this.force = new THREE.Vector2(3, 8);
     env.player = this;
     this.parent = env;
     this.color = 'red';
@@ -13,8 +14,13 @@ export default class Player extends GameObject {
     this.frame = 0;
     this.frameStart = 0;
     this.frameLimit = 2;
+    this.leftdown = false;
+    this.rightdown = true;
     this.flip = false;
+    this.xhit = false;
+    this.yhit = false;
     this.consecutiveClicks = 0;
+    this.jumppress = false;
     this.atRest = true;
   }
 
@@ -22,7 +28,7 @@ export default class Player extends GameObject {
     if (this.image instanceof Array) {
       if (this.flip) {
         ctx.scale(-1, 1);
-        ctx.drawImage(this.image[this.frame], -this.position.x, this.position.y, this.width, this.height);
+        ctx.drawImage(this.image[this.frame], -this.position.x-this.width, this.position.y, this.width, this.height);
         ctx.setTransform(1, 0, 0, 1, 0, 0);
       } else {
         ctx.drawImage(this.image[this.frame], this.position.x, this.position.y, this.width, this.height);
@@ -63,23 +69,24 @@ export default class Player extends GameObject {
       const { key } = event;
       switch (key) {
         case 'ArrowUp':
-          if (this.consecutiveClicks < 2) {
+          if (this.consecutiveClicks < 2 && this.jumppress == false) {
             this.accelerate(this.velocity.x, -this.force.y);
             this.consecutiveClicks++;
             this.atRest = false;
+            this.jumppress = true;
           }
           break;
-        case 'ArrowDown':
-          this.accelerate(this.velocity.x, this.force.y);
-          break;
+        // case 'ArrowDown':
+        //   this.accelerate(this.velocity.x, this.force.y);
+        //   break;
         case 'ArrowLeft':
-          this.force.x = -5;
-          this.accelerate(this.force.x, this.velocity.y);
+          this.accelerate(-this.force.x, this.velocity.y);
+          this.leftdown = true;
           this.flip = true;
           break;
         case 'ArrowRight':
-          this.force.x = 5;
           this.accelerate(this.force.x, this.velocity.y);
+          this.rightdown = true;
           this.flip = false;
           break;
         default:
@@ -89,8 +96,26 @@ export default class Player extends GameObject {
     window.addEventListener('keyup', (event) => {
       const { key } = event;
       switch (key) {
-        case 'ArrowLeft': case 'ArrowRight':
-          this.accelerate(0, this.velocity.y);
+        case 'ArrowLeft':
+          this.leftdown = false;
+          if (this.rightdown) {
+            this.accelerate(this.force.x, this.velocity.y);
+            this.flip = false;
+          } else {
+            this.accelerate(0, this.velocity.y)
+          }
+          break;
+        case 'ArrowRight':
+          this.rightdown = false;
+          if (this.leftdown) {
+            this.accelerate(-this.force.x, this.velocity.y);
+            this.flip = true;
+          } else {
+            this.accelerate(0, this.velocity.y);
+          }
+          break;
+        case 'ArrowUp':
+          this.jumppress = false;
           break;
         default:
           break;

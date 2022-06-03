@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import * as THREE from 'three';
 
 export default class GameObject {
@@ -52,10 +53,10 @@ export default class GameObject {
       if (this.imageFrameHandler) this.imageFrameHandler(this);
     }
 
-    if (this.movementEnabled) {
-      this.position.y += this.velocity.y;
-      this.position.x += this.velocity.x;
-    }
+    // if (this.movementEnabled) {
+    //   this.position.y += this.velocity.y;
+    //   this.position.x += this.velocity.x;
+    // }
   }
 
   freeze(x = 0, y = 0) {

@@ -1,10 +1,11 @@
+/*eslint-disable*/
 import * as THREE from 'three';
 import GameObject from './game_object';
 
 export default class Scene extends GameObject {
   constructor(width, height) {
     super(width, height, new THREE.Vector2(0, 0));
-    this.gravity = 0.5;
+    this.gravity = 0.2;
     this.children = Array.of();
     this.baseOffset = 0;
     this.limit = 0;
@@ -45,28 +46,39 @@ export default class Scene extends GameObject {
         }
         if (this.checkIntersectX(child)) {
           if (child.key === 'collapse') child.visible = false;
-          this.player.accelerate(0, this.player.velocity.y);
+          else {
+            this.player.accelerate(0, this.player.velocity.y);
+            this.player.xhit = true;
+          }
+        } else {
+          this.player.xhit = false;
         }
       }
     });
 
-    this.player.position.y += this.player.velocity.y;
+    if (!this.player.yhit) {
+      this.player.position.y += this.player.velocity.y;
+    }
     if (accY) this.player.accelerate(this.player.velocity.x, this.player.parent.gravity + this.player.velocity.y);
 
-    if (this.player.position.x > 0 + this.player.width && this.player.velocity.x < 0) {
-      this.player.position.x = Math.max(0, this.player.position.x + this.player.velocity.x);
-    } else if (this.player.position.x + this.player.width < this.width - this.player.width && this.player.velocity.x > 0) {
-      this.player.position.x = Math.min(this.width - this.player.width, this.player.position.x + this.player.velocity.x);
-    } else {
-      if (this.player.x_offset + this.player.velocity.x < this.player.x_offset_limit) {
-        const diff = this.player.x_offset - this.player.x_offset_limit;
-        this.player.x_offset -= diff;
-        this.relativeMotion(diff);
+    if (!this.player.xhit) {
+      console.log(this.player.xhit);
+      if (this.player.position.x > 0 + this.player.width && this.player.velocity.x < 0) {
+        this.player.position.x = Math.max(0, this.player.position.x + this.player.velocity.x);
+      } else if (this.player.position.x + this.player.width < this.width - this.player.width && this.player.velocity.x > 0) {
+        this.player.position.x = Math.min(this.width - this.player.width, this.player.position.x + this.player.velocity.x);
       } else {
-        this.player.x_offset += this.player.velocity.x;
-        this.relativeMotion(-this.player.velocity.x);
+        if (this.player.x_offset + this.player.velocity.x < this.player.x_offset_limit) {
+          const diff = this.player.x_offset - this.player.x_offset_limit;
+          this.player.x_offset -= diff;
+          this.relativeMotion(diff);
+        } else {
+          this.player.x_offset += this.player.velocity.x;
+          this.relativeMotion(-this.player.velocity.x);
+        }
       }
     }
+
     this.gameOver = this.checkGameOver();
   }
 
@@ -82,7 +94,7 @@ export default class Scene extends GameObject {
   }
 
   checkIntersectY(target) {
-    if (target.key !== 'foreground' || !target.visible) return false;
+    if (target.key === 'background' || !target.visible) return false;
     if (
       (
         (
