@@ -41,8 +41,11 @@ void main()
   vec2 uv = position.xy / vec2(iResolutionx, iResolutiony).xy;
   uv.y = -1.0 - uv.y;
 	
-	// Modify that X coordinate by the sin of y to oscillate back and forth up in this.
+	// Modify using sinusodal functions to oscillate back and forth up in this.
 	uv.x += sin(uv.y*10.0+iTime)/10.0;
+  uv.y += sin(uv.x*10.0+iTime)/10.0;
+  uv.x += sin(uv.y*10.0+iTime)/10.0;
+
   vec4 texture_color = vec4(.2, .2, .9, 1.0);
   vec4 k = vec4(iTime)*0.8;
 	k.xy = uv * 15.0;
