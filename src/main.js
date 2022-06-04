@@ -30,6 +30,8 @@ function createImage(src) {
 const vs_water = `
 precision mediump float;
 
+const float pi = 3.14285714286;
+
 uniform float iResolutionx;
 uniform float iResolutiony;
 uniform float iTime;
@@ -40,11 +42,18 @@ void main()
 {
   vec2 uv = position.xy / vec2(iResolutionx, iResolutiony).xy;
   uv.y = -1.0 - uv.y;
+  vec3 fragCoord = position;
 	
 	// Modify using sinusodal functions to oscillate back and forth up in this.
 	uv.x += sin(uv.y*10.0+iTime)/10.0;
   uv.y += sin(uv.x*10.0+iTime)/10.0;
   uv.x += sin(uv.y*10.0+iTime)/10.0;
+
+  float mod_val = clamp(fract(abs(sin(fragCoord.x *iTime / 100.))), .7, .3);
+  if (mod_val < .50) fragCoord.y += mod_val * 10.;
+  else fragCoord.y -= mod_val * 10.;
+
+  // fragCoord.y += wave;
 
   vec4 texture_color = vec4(.2, .2, .9, 1.0);
   vec4 k = vec4(iTime)*0.8;
@@ -54,7 +63,7 @@ void main()
   float val3 = length(0.5-fract(k.xyw*=mat3(vec3(-2.0,-1.0,0.0), vec3(3.0,-1.0,1.0), vec3(1.0,-1.0,-1.0))*0.5));
   vec4 color = vec4 ( pow(min(min(val1,val2),val3), 7.0) * 3.0)+texture_color;
   fragColor = color;
-	vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+	vec4 modelViewPosition = modelViewMatrix * vec4(fragCoord, 1.0);
 	gl_Position = projectionMatrix * modelViewPosition;
 }
 `
