@@ -4,8 +4,8 @@ import GameObject from './game_object';
 import Scene from './scene';
 import Player from './player';
 import NpObject from './np_object';
-import brick from './assets/images/brick.png';
 import sky from './assets/images/sky.png';
+import brick from './assets/images/brick.png';
 import rf1 from './assets/images/Jumping Boy Sprites/Transparent PNG/running/frame-1.png';
 import rf2 from './assets/images/Jumping Boy Sprites/Transparent PNG/running/frame-2.png';
 import rf3 from './assets/images/Jumping Boy Sprites/Transparent PNG/running/frame-3.png';
@@ -16,12 +16,9 @@ import sf1 from './assets/images/Jumping Boy Sprites/Transparent PNG/standing/fr
 import sf2 from './assets/images/Jumping Boy Sprites/Transparent PNG/standing/frame-2.png';
 import jf1 from './assets/images/Jumping Boy Sprites/Transparent PNG/jump/jump_up.png';
 import jf2 from './assets/images/Jumping Boy Sprites/Transparent PNG/jump/jump_fall.png';
-import c1 from './assets/images/star coin rotate/star coin rotate 1.png';
-import c2 from './assets/images/star coin rotate/star coin rotate 2.png';
-import c3 from './assets/images/star coin rotate/star coin rotate 3.png';
-import c4 from './assets/images/star coin rotate/star coin rotate 4.png';
-import c5 from './assets/images/star coin rotate/star coin rotate 5.png';
-import c6 from './assets/images/star coin rotate/star coin rotate 6.png';
+
+const SKY_BG_RENDER_ORDER = 1;
+const WATER__BG_RENDER_ORDER = 2;
 
 function createImage(src) {
   let image = new Image();
@@ -29,192 +26,328 @@ function createImage(src) {
   return image;
 }
 
-// export default function initGame() {
-//   let canvas, context, env, backGround, player, obj1,  obj2, baseObj;
-//   let setup = () => {
-//     canvas = document.getElementById('GameScene');
-//     canvas.width = window.innerWidth;
-//     canvas.height = window.innerHeight;
 
-//     context = canvas.getContext('2d');
-//     context.clearRect(0, 0, canvas.width, canvas.height);
-//     env = new Scene(canvas.width, canvas.height);
-//     env.limit = 10000;
-//     backGround = new GameObject(env.limit + env.width, env.height, new THREE.Vector2(0, 0), createImage(sky));
-//     backGround.key = 'background';
-//     backGround.enableMovement();
-//     env.addChild(backGround);
+const vs_water = `
+precision mediump float;
 
-//     player = new Player(env, [
-//       createImage(sf1),
-//       createImage(sf2),
-//       createImage(rf1),
-//       createImage(rf2),
-//       createImage(rf3),
-//       createImage(rf4),
-//       createImage(rf5),
-//       createImage(rf6),
-//       createImage(jf1),
-//       createImage(jf2),
-//       (player) => {
-//         // console.log(player.velocity);
-//         if (player.velocity.y === 0 && player.velocity.x === 0) {
-//           if (player.frame > 2) {
-//             player.frame = 0;
-//             player.frameStart = 0;
-//             player.frameLimit = 2;
-//           }
-//         } else if (player.velocity.y < 0) {
-//           if (player.frame !== 8) {
-//             player.frame = 8;
-//             player.frameStart = 8;
-//             player.frameLimit = 8;
-//           }
-//         } else if (player.velocity.y > player.parent.gravity) {
-//           if (player.frame !== 9) {
-//             player.frame = 9;
-//             player.frameStart = 9;
-//             player.frameLimit = 9;
-//           }
-//         } else if (player.velocity.x !== 0) {
-//           if (player.frame < 2 || player.frame > 7) {
-//             player.frame = 2;
-//             player.frameStart = 2;
-//             player.frameLimit = 7;
-//           }
-//         }
-//       }
-//     ]);
-//     player.enableMovement();
+uniform float iResolutionx;
+uniform float iResolutiony;
+uniform float iTime;
 
-//     obj1 = new NpObject(env, 250, 700, 250, 50, createImage(brick));
-//     obj1.key = 'foreground';
-//     obj1.enableMovement();
+varying vec4 fragColor;
 
-//     obj2 = new NpObject(env, obj1.position.x + obj1.width / 2, 
-//     obj1.position.y - 50, 50, 50, [
-//       createImage(c1),
-//       createImage(c2),
-//       createImage(c3),
-//       createImage(c4),
-//       createImage(c5),
-//       createImage(c6),
-//       null,
-//     ]);
-//     obj2.frameStart = 0;
-//     obj2.frameLimit = 6;
-//     obj2.key = 'collapse';
-//     obj2.enableMovement();
+void main() 
+{
+  vec2 uv = position.xy / vec2(iResolutionx, iResolutiony).xy;
+  uv.y = -1.0 - uv.y;
+	
+	// Modify that X coordinate by the sin of y to oscillate back and forth up in this.
+	uv.x += sin(uv.y*10.0+iTime)/10.0;
+  vec4 texture_color = vec4(.2, .2, .9, 1.0);
+  vec4 k = vec4(iTime)*0.8;
+	k.xy = uv * 15.0;
+  float val1 = length(0.5-fract(k.xyw*=mat3(vec3(-2.0,-1.0,0.0), vec3(3.0,-1.0,1.0), vec3(1.0,-1.0,-1.0))*0.5));
+  float val2 = length(0.5-fract(k.xyw*=mat3(vec3(-2.0,-1.0,0.0), vec3(3.0,-1.0,1.0), vec3(1.0,-1.0,-1.0))*0.2));
+  float val3 = length(0.5-fract(k.xyw*=mat3(vec3(-2.0,-1.0,0.0), vec3(3.0,-1.0,1.0), vec3(1.0,-1.0,-1.0))*0.5));
+  vec4 color = vec4 ( pow(min(min(val1,val2),val3), 7.0) * 3.0)+texture_color;
+  fragColor = color;
+	vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+	gl_Position = projectionMatrix * modelViewPosition;
+}
+`
 
-//     while (env.baseOffset < env.limit + env.width) {
-//       baseObj = new NpObject(env, env.baseOffset, env.height - 50, 350, 50, createImage(brick));
-//       env.baseOffset += baseObj.width + 250;
-//       baseObj.key = 'foreground';
-//       baseObj.enableMovement();
-//     }
-//   }
+const vs_grass = `
+precision mediump float;
 
-//   setup();
+uniform float iResolutionx;
+uniform float iResolutiony;
+uniform float iTime;
 
-//   let animate = () => {
-//     if (env.gameOver) initGame()
-//     else requestAnimationFrame(animate)
-//     context.clearRect(0, 0, canvas.width, canvas.height);
-//     env.update(context);
-//     env.draw(context);
-//     player.update(context);
-//     player.draw(context);
-//   };
-//   animate();
-// }
+varying vec4 fragColor;
 
+vec2 iResolution;
 
-export default function initGame() {
-  var renderer, scene, camera, canvas;
-
-  const setup = () => {
-    canvas = document.getElementById('canvas');
-
-     //RENDERER
-    renderer = new THREE.WebGLRenderer({
-      canvas: canvas, 
-      antialias: true
-    });
-    renderer.setClearColor(0xffffff);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
-
-    //CAMERA
-    camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 300, 10000 );
-
-    //SCENE
-    scene = new THREE.Scene();
-
-    //LIGHTS
-    var light = new THREE.AmbientLight(0xffffff, 0.5);
-    scene.add(light);
-
-    var light2 = new THREE.PointLight(0xffffff, 0.5);
-    scene.add(light2);
-
-    var customUniforms = {
-        delta: {value: 0}
-    };
-    var material = new THREE.ShaderMaterial({
-        uniforms: customUniforms,
-        vertexShader: document.getElementById('vertexShader2').textContent,
-        fragmentShader: document.getElementById('fragmentShader2').textContent
-    });
-
-
-    
-    var geometry = new THREE.BoxBufferGeometry(100, 100, 100, 10, 10, 10);
-    var mesh = new THREE.Mesh(geometry, material);
-    mesh.position.z = -1000;
-    mesh.position.x = -100;
-    scene.add(mesh);
-
-    var geometry2 = new THREE.SphereGeometry(50, 20, 20);
-    var mesh2 = new THREE.Mesh(geometry2, material);
-    mesh2.position.z = -1000;
-    mesh2.position.x = 100;
-    scene.add(mesh2);
-
-
-    var geometry3 = new THREE.PlaneGeometry(10000, 10000, 100, 100);
-    var mesh3 = new THREE.Mesh(geometry3, material);
-    mesh3.rotation.x = -90 * Math.PI / 180;
-    mesh3.position.y = -100;
-    scene.add(mesh3);
-
-    //attribute
-    var vertexDisplacement = new Float32Array(geometry.attributes.position.count);
-
-    for (var i = 0; i < vertexDisplacement.length; i ++) {
-        vertexDisplacement[i] = Math.sin(i);
+// #### CLOUDS/BACKGROUND
+// Value noise
+// https://www.shadertoy.com/view/lsf3WH
+float hash(vec2 p)  // replace this by something better
+{
+    p  = 50.0*fract( p*0.3183099 + vec2(0.71,0.113));
+    return -1.0+2.0*fract( p.x*p.y*(p.x+p.y) );
+}
+float noise( in vec2 p )
+{
+    vec2 i = floor( p );
+    vec2 f = fract( p );
+	
+	vec2 u = f*f*(3.0-2.0*f);
+    return mix( mix( hash( i + vec2(0.0,0.0) ),
+                     hash( i + vec2(1.0,0.0) ), u.x),
+                mix( hash( i + vec2(0.0,1.0) ),
+                     hash( i + vec2(1.0,1.0) ), u.x), u.y);
+}
+// Fractal noise
+float fbm(vec2 uv) {
+    uv *= 8.0;
+    mat2 m = mat2( 1.6,  1.2, -1.2,  1.6 ); // Rotation matrix
+    float total = 0.0;
+    float amplitude = 0.5;
+	for (int i = 0; i < 4; i++) {
+		total += noise(uv) * amplitude;
+		uv = m * uv;
+		amplitude *= 0.5;
+	}
+    // Modification to make background lighter and soften the darker parts
+    total = 0.5 + 0.5*total;
+	return total;
+}
+// #### GRASS
+//
+float random(float co)
+{
+    //-- https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
+    return fract(sin(dot(vec2(co ,co ) ,vec2(12.9898,78.233))) * 43758.5453);
+}
+float randomRange(float low, float high, float randy)
+{
+	return low + (high - low) * random(randy);
+}
+vec3 randomColor(vec3 col, vec3 variation, float randy)
+{
+    return vec3(col.x + randomRange(-variation.x, +variation.x, randy),
+                col.y + randomRange(-variation.y, +variation.y, randy),
+                col.z + randomRange(-variation.z, +variation.z, randy));
+}
+vec4 grass(vec2 p, int i, vec2 q, vec2 pos, float curve, float height)
+{
+    // coordinate y=0 will represent the bottom.
+    pos = q + pos;
+    pos.y += 0.5;
+    // grass radius
+    float r = .005;
+    // the grass gets thinner and thinner, as it grows to the top of the screen
+    r = r * (1.0 - smoothstep(0.0, height, pos.y));
+    // curve value sign.
+    float s = sign(curve);
+    //the grass shape is described by a function on the form x = c* y^2, where c is the curve.
+    float grass_curve = abs(pos.x - s * pow(curve * pos.y, 2.0) );
+    // sligthly blur the edges of the grass blade to decrease
+    // aliasing issues
+    float res = 1.0-(1.0 - smoothstep(r, r+0.006,grass_curve  )) *
+                    (1.0 - smoothstep(height-0.1, height, pos.y));
+    // grass bottom is dark, but the blade gets gradually brighter as it grows upward.
+    vec3 bottom_color = randomColor(vec3(0.5,0.3,0.1), vec3(0.0,0.30,0.0), float(i));
+    vec3 top_color =  randomColor(vec3(0.0,0.6,0.0), vec3(0.0,0.30,0.0), float(i));
+    vec3 col = mix(bottom_color, top_color, pos.y);
+    return vec4(col, 1.0-res);
+}
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+	vec2 p = fragCoord.xy / iResolution.xy;
+    // BACKGROUND/CLOUDS
+    vec2 uv = p*vec2(iResolution.x/iResolution.y,1.0) + iTime*0.025;
+    vec3 skycolor = vec3(0.4, 0.7, 1.0);
+    vec3 cloudcolor = vec3(1.0, 1.0, 1.0);
+    float f = fbm(uv);
+    vec3 col = mix(skycolor, cloudcolor, f); // background color
+    // GRASS
+    vec2 q = p - vec2(0.5, 0.33);
+    q.x *= 0.5;
+    for(int i = 0; i <300; i += 1)
+    {
+        float height = randomRange(.2, .4, float(i+2));
+        // grass curve depends on the height.
+        float max_curve = 1.0 - height + 0.30;
+        float curve = 0.1*sin(iTime+float(i)) + randomRange(-max_curve, max_curve, float(i+1));
+        vec2 pos = vec2(randomRange(-0.35, 0.35, float(i+3)) , 0.0);
+        vec4 ret = grass(p,i,q*1.4, pos, curve, height);
+        // blend the grass with the background.
+        col = mix(col, ret.xyz, ret.w);
     }
+	fragColor = vec4(col,1.0);
+}
 
-    geometry.addAttribute('vertexDisplacement', new THREE.BufferAttribute(vertexDisplacement, 1));
-  }
-  var delta = 0;
-  const render = ()=> {
-      delta += 0.1;
+void main() {
+  iResolution = vec2(iResolutionx, iResolutiony);
+  mainImage(fragColor, position.xy);
+  vec4 scale = vec4(0.1);
+  vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+	gl_Position = projectionMatrix * modelViewPosition;
+}
+`
 
-      //uniform
-      mesh.material.uniforms.delta.value = 0.5 + Math.sin(delta) * 0.5;
+const fs_text = `
+precision mediump float;
 
-      //attribute
-      for (var i = 0; i < vertexDisplacement.length; i ++) {
-          vertexDisplacement[i] = 0.5 + Math.sin(i + delta) * 0.25;
+varying vec4 fragColor;
+
+void main() {
+	gl_FragColor = fragColor;
+}
+`
+var renderer,
+    scene,
+    camera,
+    context,
+    env,
+    player,
+    waterMesh,
+    skyMesh,
+    front_canvas,
+    back_canvas;
+
+export default function start() {
+  back_canvas = document.getElementById('back-canvas');
+  front_canvas = document.getElementById('front-canvas');
+  front_canvas.width = window.innerWidth;
+  front_canvas.height = window.innerHeight;
+  context = front_canvas.getContext('2d');
+  
+
+  //RENDERER
+  renderer = new THREE.WebGLRenderer({
+    canvas: back_canvas, 
+    antialias: true
+  });
+  renderer.setClearColor(0xffffff);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  env = new Scene(front_canvas.width, front_canvas.height);
+  env.limit = 10000;
+  const backGround = new GameObject(env.limit + env.width, env.height, new THREE.Vector2(0, 0), null);
+  backGround.key = 'background';
+  backGround.enableMovement();
+  env.addChild(backGround);
+
+  player = new Player(env, [
+    createImage(sf1),
+    createImage(sf2),
+    createImage(rf1),
+    createImage(rf2),
+    createImage(rf3),
+    createImage(rf4),
+    createImage(rf5),
+    createImage(rf6),
+    createImage(jf1),
+    createImage(jf2),
+    (player) => {
+      // console.log(player.velocity);
+      if (player.velocity.y === 0 && player.velocity.x === 0) {
+        if (player.frame > 2) {
+          player.frame = 0;
+          player.frameStart = 0;
+          player.frameLimit = 2;
+        }
+      } else if (player.velocity.y < 0) {
+        if (player.frame !== 8) {
+          player.frame = 8;
+          player.frameStart = 8;
+          player.frameLimit = 8;
+        }
+      } else if (player.velocity.y > player.parent.gravity) {
+        if (player.frame !== 9) {
+          player.frame = 9;
+          player.frameStart = 9;
+          player.frameLimit = 9;
+        }
+      } else if (player.velocity.x !== 0) {
+        if (player.frame < 2 || player.frame > 7) {
+          player.frame = 2;
+          player.frameStart = 2;
+          player.frameLimit = 7;
+        }
       }
-      mesh.geometry.attributes.vertexDisplacement.needsUpdate = true;
+    }
+  ]);
+  player.enableMovement();
 
+  let x_pos = 0;
+  let obj;
 
-    renderer.render(scene, camera);
+  for (let i = 0; i < 500; i++) {
+    obj = new NpObject(env, 0 + x_pos, 750, 200, 200, createImage(brick));
+    obj.key = 'foreground';
+    obj.enableMovement();
 
-    requestAnimationFrame(render);
+    obj = new NpObject(env, 350 + (200 * Math.min(i, 1) + i * front_canvas.width), 550, 150, 50, createImage(brick));
+    obj.key = 'foreground';
+    obj.enableMovement();
+
+    obj = new NpObject(env, 750 + (200 * Math.min(i, 1) + i * front_canvas.width), 300, 200, 50, createImage(brick));
+    obj.key = 'foreground';
+    obj.enableMovement();
+
+    obj = new NpObject(env, 100 + (200 * Math.min(i, 1) + i * front_canvas.width), 250, 200, 50, createImage(brick));
+    obj.key = 'foreground';
+    obj.enableMovement();
+
+    obj = new NpObject(env, 600 + (200 * Math.min(i, 1) + i * front_canvas.width), 400, 75, 50, createImage(brick));
+    obj.key = 'foreground';
+    obj.enableMovement();
+
+    x_pos += 400
   }
-    setup();
-    //RENDER LOOP
-    render();
+
+  //CAMERA
+  camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 300, 10000 );
+
+  //SCENE
+  scene = new THREE.Scene();
+
+  //LIGHTS
+  var light = new THREE.AmbientLight(0xffffff, 0.5);
+  scene.add(light);
+
+  var light2 = new THREE.PointLight(0xffffff, 0.5);
+  scene.add(light2);
+
+  var uniforms = {
+      iTime: {value: 0},
+  };
+
+  var skyMaterial = new THREE.ShaderMaterial({
+    uniforms: { ...uniforms, iResolutionx: {value: window.innerWidth + 1200}, iResolutiony: {value: 500} },
+    vertexShader: vs_grass,
+    fragmentShader: fs_text
+  });
+
+  var skyGeomerty = new THREE.PlaneGeometry(window.innerWidth + 1200, window.innerHeight + 200, 500, 500);
+  skyMesh = new THREE.Mesh(skyGeomerty, skyMaterial);
+  skyMesh.renderOrder = SKY_BG_RENDER_ORDER;
+  skyMesh.position.z = -1000;
+  skyMesh.position.y = -200;
+  skyMesh.position.x = -600;
+
+  var waterMaterial = new THREE.ShaderMaterial({
+    uniforms: { ...uniforms, iResolutionx: {value: window.innerWidth}, iResolutiony: {value: 150} },
+    vertexShader: vs_water,
+    fragmentShader: fs_text
+  });
+
+  var waterGeometry = new THREE.PlaneGeometry(window.innerWidth, 100, 100, 100);
+  waterMesh = new THREE.Mesh(waterGeometry, waterMaterial);
+  waterMesh.renderOrder = WATER__BG_RENDER_ORDER;
+  waterMesh.position.z = -1000;
+  waterMesh.position.y = -300
+
+
+  scene.add(skyMesh);
+  scene.add(waterMesh);
+
+  //RENDER LOOP
+  render();
+}
+
+const render  = (timeStamp)=> {
+  context.clearRect(0, 0, front_canvas.width, front_canvas.height);
+  env.update(context);
+  env.draw(context);
+  player.draw(context);
+  player.update(context);
+  waterMesh.material.uniforms.iTime.value = timeStamp / 1000;
+  skyMesh.material.uniforms.iTime.value = timeStamp / 1000;
+  renderer.render(scene, camera);
+  if (env.gameOver) start();
+  else requestAnimationFrame(render);
 }

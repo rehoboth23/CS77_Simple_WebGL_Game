@@ -1,4 +1,6 @@
 /*eslint-disable*/
 import initGame from './main';
+import start from './main';
 
-initGame();
+// initGame();
+start();
