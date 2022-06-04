@@ -62,7 +62,6 @@ export default class Scene extends GameObject {
     if (accY) this.player.accelerate(this.player.velocity.x, this.player.parent.gravity + this.player.velocity.y);
 
     if (!this.player.xhit) {
-      console.log(this.player.xhit);
       if (this.player.position.x > 0 + this.player.width && this.player.velocity.x < 0) {
         this.player.position.x = Math.max(0, this.player.position.x + this.player.velocity.x);
       } else if (this.player.position.x + this.player.width < this.width - this.player.width && this.player.velocity.x > 0) {

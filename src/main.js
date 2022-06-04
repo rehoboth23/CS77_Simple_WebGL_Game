@@ -235,7 +235,6 @@ export default function start() {
     createImage(jf1),
     createImage(jf2),
     (player) => {
-      // console.log(player.velocity);
       if (player.velocity.y === 0 && player.velocity.x === 0) {
         if (player.frame > 2) {
           player.frame = 0;
