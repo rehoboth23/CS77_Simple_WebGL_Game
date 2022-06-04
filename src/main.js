@@ -113,8 +113,12 @@ float fbm(vec2 uv) {
     total = 0.5 + 0.5*total;
 	return total;
 }
+
+
 // #### GRASS
-//
+// https://www.shadertoy.com/view/MdBcWK -- This shadertoy was forked and used as a template. I adjusted and tweaked this code to produce my version. Most of the code is general. Specifically
+// took curve function of the curve of grass and the blurring. I will denote with a * comment
+
 float random(float co)
 {
     //-- https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
@@ -126,31 +130,34 @@ float randomRange(float low, float high, float randy)
 }
 vec3 randomColor(vec3 col, vec3 variation, float randy)
 {
-    return vec3(col.x + randomRange(-variation.x, +variation.x, randy),
-                col.y + randomRange(-variation.y, +variation.y, randy),
-                col.z + randomRange(-variation.z, +variation.z, randy));
+    return vec3(col.x + randomRange(-variation.x, + variation.x, randy),
+                col.y + randomRange(-variation.y, + variation.y, randy),
+                col.z + randomRange(-variation.z, + variation.z, randy));
 }
 vec4 grass(vec2 p, int i, vec2 q, vec2 pos, float curve, float height)
 {
-    // coordinate y=0 will represent the bottom.
+    //Setting 0 to be bottom of screen
     pos = q + pos;
     pos.y += 0.5;
-    // grass radius
+    
+    //Grass radius
     float r = .005;
-    // the grass gets thinner and thinner, as it grows to the top of the screen
+    
+    //Shape of grass
     r = r * (1.0 - smoothstep(0.0, height, pos.y));
-    // curve value sign.
+    
+    //Grass curve function code x = c * y^2 *****
     float s = sign(curve);
-    //the grass shape is described by a function on the form x = c* y^2, where c is the curve.
     float grass_curve = abs(pos.x - s * pow(curve * pos.y, 2.0) );
-    // sligthly blur the edges of the grass blade to decrease
-    // aliasing issues
-    float res = 1.0-(1.0 - smoothstep(r, r+0.006,grass_curve  )) *
-                    (1.0 - smoothstep(height-0.1, height, pos.y));
-    // grass bottom is dark, but the blade gets gradually brighter as it grows upward.
+    
+    // Grass bluring function code ****
+    float res = 1.0-(1.0 - smoothstep(r, r+0.006,grass_curve  )) * (1.0 - smoothstep(height-0.1, height, pos.y));
+    
+    //Coloring the grass
     vec3 bottom_color = randomColor(vec3(0.5,0.3,0.1), vec3(0.0,0.30,0.0), float(i));
     vec3 top_color =  randomColor(vec3(0.0,0.6,0.0), vec3(0.0,0.30,0.0), float(i));
     vec3 col = mix(bottom_color, top_color, pos.y);
+    
     return vec4(col, 1.0-res);
 }
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
@@ -162,18 +169,21 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 cloudcolor = vec3(1.0, 1.0, 1.0);
     float f = fbm(uv);
     vec3 col = mix(skycolor, cloudcolor, f); // background color
+    
     // GRASS
     vec2 q = p - vec2(0.5, 0.33);
     q.x *= 0.5;
     for(int i = 0; i <300; i += 1)
     {
         float height = randomRange(.2, .4, float(i+2));
-        // grass curve depends on the height.
+        
+        //Grass curve vs height *****
         float max_curve = 1.0 - height + 0.30;
         float curve = 0.1*sin(iTime+float(i)) + randomRange(-max_curve, max_curve, float(i+1));
         vec2 pos = vec2(randomRange(-0.35, 0.35, float(i+3)) , 0.0);
         vec4 ret = grass(p,i,q*1.4, pos, curve, height);
-        // blend the grass with the background.
+        
+        //Background blend *****
         col = mix(col, ret.xyz, ret.w);
     }
 	fragColor = vec4(col,1.0);
