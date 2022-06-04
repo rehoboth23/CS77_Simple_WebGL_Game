@@ -4,7 +4,7 @@ import GameObject from './game_object';
 
 export default class Player extends GameObject {
   constructor(env, image) {
-    super(50, 100, new THREE.Vector2(100, 100), image);
+    super(75, 150, new THREE.Vector2(100, 100), image);
     this.force = new THREE.Vector2(3, 8);
     env.player = this;
     this.parent = env;
