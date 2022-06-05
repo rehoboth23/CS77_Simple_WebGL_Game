@@ -31,6 +31,7 @@ const vs_water = `
 precision mediump float;
 
 const float pi = 3.14285714286;
+const float wave_width = 0.01;
 
 uniform float iResolutionx;
 uniform float iResolutiony;
@@ -49,11 +50,9 @@ void main()
   uv.y += sin(uv.x*10.0+iTime)/10.0;
   uv.x += sin(uv.y*10.0+iTime)/10.0;
 
-  float mod_val = clamp(fract(abs(sin(fragCoord.x *iTime / 100.))), .7, .3);
-  if (mod_val < .50) fragCoord.y += mod_val * 10.;
-  else fragCoord.y -= mod_val * 10.;
-
-  // fragCoord.y += wave;
+  float mod_y = mod(fragCoord.y, 20.);
+  float wave_shift = 1.5 * sin(fragCoord.x + iTime * 10.);
+  fragCoord.y += wave_shift;
 
   vec4 texture_color = vec4(.2, .2, .9, 1.0);
   vec4 k = vec4(iTime)*0.8;

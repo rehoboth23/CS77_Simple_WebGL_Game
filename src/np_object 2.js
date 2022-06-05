@@ -1,3 +1,4 @@
+/*eslint-disable*/
 import * as THREE from 'three';
 import GameObject from './game_object';
 
