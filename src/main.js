@@ -51,7 +51,9 @@ void main()
   uv.x += sin(uv.y*10.0+iTime)/10.0;
 
   float mod_y = mod(fragCoord.y, 20.);
-  float wave_shift = 1.5 * sin(fragCoord.x + iTime * 10.);
+  float wave_height = 1.5;
+  float wave_speed = 10.;
+  float wave_shift = wave_height * sin(fragCoord.x + iTime * wave_speed);
   fragCoord.y += wave_shift;
 
   vec4 texture_color = vec4(.2, .2, .9, 1.0);
